@@ -33,7 +33,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 #Global variables
 sentiment_classifier_filename = '/home/optimum/social_entity_extraction/TwitterSentimentsScikitLearnSVM/semtiment_classifier.pickle'
 sentiment_vectorizer_filename = '/home/optimum/social_entity_extraction/TwitterSentimentsScikitLearnSVM/sentiment_vectorizer.pickle'
-
+start_date_str = 'Tue Jun 28'
+end_date_str = 'Wed Jun 29'
 #Utility functions for text preprocessing
 emoticons_str = r"""
     (?:
@@ -412,8 +413,6 @@ def parallel_process_days(start_date_str,end_date_str):
 #        print ne[0] + ' is ' + ne[1]
 
 if __name__ == '__main__':
-    start_date_str = 'Wed Jun 01'
-    end_date_str = 'Wed Jun 15'
 #    end_date_str = 'Mon May 23'
     parallel_process_days(start_date_str,end_date_str)
     logging.info("All Done!")
