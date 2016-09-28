@@ -1,9 +1,7 @@
 #libraries
-require(XLConnect)
 require(rmongodb)
 require(futile.logger)
 require(tm)
-require(rmongodb)
 require(RCurl)
 require(jsonlite)
 require(wordcloud)
@@ -16,7 +14,52 @@ require(scales)
 
 Sys.setenv(TZ='GMT')
 
-#setwd("C:\\Users\\Ahmad\\Dropbox\\Work\\WolverhamptonUni\\Optimum\\social_media\\twitter\\SocialMinerShinyApp")
+#from the 3375 VM:
+#hostPort <- "192.168.3.50:27017"
+#from anywhere else:
+hostPort <- "optimum.euprojects.net:3368"
+
+myYBreaks <- function(y){
+  minV <- round_any(min(y), 10, f = floor)
+  maxV <- round_any(max(y), 10, f = ceiling)
+  breaks <- seq(minV,  maxV, by = round((maxV-minV)/10))
+  names(breaks) <- attr(breaks,"labels")
+  return(breaks)
+}
+
+myXBreaks <- function(x){
+  xList <- list()
+  d <- round(abs(difftime(min(x),max(x),units="days")))
+  dNum <- as(d,"numeric")
+  if (dNum <= 7) {
+    xlabStr <- "Time (Hours)"
+    dateBreaks <- switch(dNum,
+                         "1 hour",
+                         "2 hours",
+                         "3 hours",
+                         "4 hours",
+                         "6 hours",
+                         "6 hours",
+                         "6 hours"
+    )
+    dateLabels = "%B %d %H"
+  } else if (dNum <= 14) {
+    xlabStr <- "Time (Hours)"
+    dateBreaks <- "12 hours"
+    dateLabels = "%B %d %H"
+  } else {
+    xlabStr <- "Time (Hours)"
+    dateBreaks <- "24 hours"
+    dateLabels = "%B %d %H"
+  }
+  xList[[1]] <- xlabStr
+  xList[[2]] <- dateBreaks
+  xList[[3]] <- dateLabels
+  
+  return(xList)
+}
+
+#setwd("C:/Users/Ahmad/Dropbox/Work/WolverhamptonUni/Optimum/social_media/twitter/ShinyApps/SocialMinerShinyApp")
 # startStr <- "2016-06-01"
 # endStr <- "2016-06-05"
 # trafficConcepts <- c("ROADWORKS","CONGESTION", "ACCIDENT")
@@ -37,7 +80,7 @@ plotTrafficTimeLines <- function(startStr, endStr, trafficConcepts) {
   }
   
   #connect to mongoDB
-  mongo <- mongo.create(host = "optimum.euprojects.net:3368")
+  mongo <- mongo.create(host = hostPort)
   
   #create a list to store all the dataframes
   trafficTwitterAggsList <- list()
@@ -179,25 +222,29 @@ plotTrafficTimeLines <- function(startStr, endStr, trafficConcepts) {
   upper <-
     with(meltedDF,as.POSIXct(strftime(max(gmt_date),"%Y-%m-%d %H:%M:%S")))
   limits = c(lower,upper)
+  xList <- myXBreaks(meltedDF$gmt_date)
   timelineplot <- ggplot(meltedDF,aes(x = gmt_date,y = value)) +
     geom_line(size = 1.5,aes(colour = Concept)) +
     scale_fill_brewer(palette = "Set1") +
-    xlab("Time (Hours)") +
+    xlab(xList[[1]]) +
     ylab("Number of tweets") +
     scale_x_datetime(
-      date_breaks = ("2 hour"),
-      date_labels = "%b %d %H",
+      date_breaks = (xList[[2]]),
+      date_labels = xList[[3]],
       limits = limits
     ) +
-    scale_y_discrete(breaks = seq(min(meltedDF$value), max(meltedDF$value) *
-                                    2, by = 5), labels = comma) +
+    scale_y_continuous(breaks = myYBreaks(meltedDF$value), labels=comma) +
     ggtitle("Traffic Concept Mentions in Tweets") +
     theme(
+      plot.title = element_text(colour = "red", size = 20),
       axis.text.x = element_text(
-        angle = 45, hjust = 1, size = 8
+        angle = 45, hjust = 1, size = 16
       ),
-      axis.text.y = element_text(size = 10),
-      legend.text = element_text(size = 12)
+      axis.title.x = element_text(size = 16, colour="blue"),
+      axis.text.y = element_text(size = 16),
+      axis.title.y = element_text(size = 16, colour="blue"),
+      legend.text = element_text(size = 16),
+      legend.title = element_text(colour="blue", size=16, face="bold")
     )
   returnList <- list()
   returnList[[1]] <- timelineplot
