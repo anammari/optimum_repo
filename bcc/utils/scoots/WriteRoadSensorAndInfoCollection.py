@@ -76,7 +76,7 @@ def fetch_sensor_info(filename, input_collection, output_collection, sensorSourc
         gmt_e_date = gmt.localize(endDt)
         
         #start date is a month before the end date
-        gmt_s_date = gmt_e_date - datetime.timedelta(days=7)
+        gmt_s_date = gmt_e_date - datetime.timedelta(days=30)
         
 #        print startDt
 #        print endDt
@@ -88,7 +88,8 @@ def fetch_sensor_info(filename, input_collection, output_collection, sensorSourc
         logging.info("Started fetching {} sensors".format(sensorSource))
         sensors = []
         types = ['AverageSpeed','Flow']
-        typeSensor = ['ANPR','Detector','Scoot']
+#        typeSensor = ['ANPR','Detector','Scoot']
+        typeSensor = ['ANPR','Scoot']
         try:
             pipeline = [
                   { "$match": { "insertion_datetime":     {"$gte": gmt_s_date,
